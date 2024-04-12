@@ -1,7 +1,5 @@
 package hw04lrucache
 
-import "fmt"
-
 type List interface {
 	Len() int
 	Front() *ListItem
@@ -36,7 +34,7 @@ func (l *list) Back() *ListItem {
 	return l.tail
 }
 
-func (l *list) PushFirst(v interface{}) *ListItem {
+func (l *list) pushFirst(v interface{}) *ListItem {
 	CurrentNode := ListItem{v, nil, nil}
 	l.head = &CurrentNode
 	l.tail = &CurrentNode
@@ -46,7 +44,7 @@ func (l *list) PushFirst(v interface{}) *ListItem {
 
 func (l *list) PushFront(v interface{}) *ListItem {
 	if l.listLen == 0 {
-		return l.PushFirst(v)
+		return l.pushFirst(v)
 	}
 	CurrentNode := ListItem{v, l.head, nil}
 	l.head.Prev = &CurrentNode
@@ -57,7 +55,7 @@ func (l *list) PushFront(v interface{}) *ListItem {
 
 func (l *list) PushBack(v interface{}) *ListItem {
 	if l.listLen == 0 {
-		return l.PushFirst(v)
+		return l.pushFirst(v)
 	}
 	CurrentNode := ListItem{v, nil, l.tail}
 	l.tail.Next = &CurrentNode
@@ -84,7 +82,6 @@ func (l *list) Remove(i *ListItem) {
 		l.tail.Next = nil
 		return
 	}
-	fmt.Printf("Next %p Prev %p \n", i.Next, i.Prev)
 	i.Prev.Next = i.Next
 	i.Next.Prev = i.Prev
 }
