@@ -15,6 +15,33 @@ func TestList(t *testing.T) {
 		require.Nil(t, l.Back())
 	})
 
+	t.Run("remove last node", func(t *testing.T) {
+		l := NewList()
+		node := l.PushFront(10)
+		l.Remove(node)
+		require.Equal(t, 0, l.Len())
+	})
+
+	t.Run("remove tail or head node", func(t *testing.T) {
+		l := NewList()
+		l.PushBack(10)
+		l.PushBack(20)
+		l.PushBack(30)
+		l.Remove(l.Front())
+		require.Equal(t, 20, l.Front().Value)
+		l.Remove(l.Back())
+		require.Equal(t, 20, l.Back().Value)
+	})
+
+	t.Run("check switch head tail", func(t *testing.T) {
+		l := NewList()
+		l.PushFront(10) // [10]
+		l.PushFront(20) // [20 ,10]
+		require.Equal(t, l.Back().Value, 10)
+		l.MoveToFront(l.Back()) // [10, 20]
+		require.Equal(t, l.Back().Value, 20)
+	})
+
 	t.Run("complex", func(t *testing.T) {
 		l := NewList()
 
@@ -39,13 +66,14 @@ func TestList(t *testing.T) {
 		require.Equal(t, 80, l.Front().Value)
 		require.Equal(t, 70, l.Back().Value)
 
-		l.MoveToFront(l.Front()) // [80, 60, 40, 10, 30, 50, 70]
-		l.MoveToFront(l.Back())  // [70, 80, 60, 40, 10, 30, 50]
+		l.MoveToFront(l.Front())      // [80, 60, 40, 10, 30, 50, 70]
+		l.MoveToFront(l.Back())       // [70, 80, 60, 40, 10, 30, 50]
+		l.MoveToFront(l.Front().Next) // [80, 70, 60, 40, 10, 30, 50]
 
 		elems := make([]int, 0, l.Len())
 		for i := l.Front(); i != nil; i = i.Next {
 			elems = append(elems, i.Value.(int))
 		}
-		require.Equal(t, []int{70, 80, 60, 40, 10, 30, 50}, elems)
+		require.Equal(t, []int{80, 70, 60, 40, 10, 30, 50}, elems)
 	})
 }
