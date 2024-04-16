@@ -43,6 +43,11 @@ var text = `Как видите, он  спускается  по  лестни�
 	посидеть у огня и послушать какую-нибудь интересную сказку.
 		В этот вечер...`
 
+var (
+	smallText   = `One Two, Two, 333, 333, 333, FFFF, FFFF, FFFF, FFFF,`
+	exampleText = `cat and dog, one dog,two cats and one man`
+)
+
 func TestTop10(t *testing.T) {
 	t.Run("no words in empty string", func(t *testing.T) {
 		require.Len(t, Top10(""), 0)
@@ -78,5 +83,29 @@ func TestTop10(t *testing.T) {
 			}
 			require.Equal(t, expected, Top10(text))
 		}
+	})
+	t.Run("incomplete slice", func(t *testing.T) {
+		expected := []string{
+			"FFFF,", // 4
+			"333,",  // 3
+			"Two,",  // 2
+			"One",   // 1
+		}
+		require.Equal(t, expected, Top10(smallText))
+	})
+	t.Run("Second example text", func(t *testing.T) {
+		expected := []string{
+			"and",     // 2
+			"one",     // 2
+			"cat",     // 1
+			"cats",    // 1
+			"dog,",    // 1
+			"dog,two", // 1
+			"man",     // 1
+		}
+		require.Equal(t, Top10(exampleText), expected)
+	})
+	t.Run("max slice len", func(t *testing.T) {
+		require.LessOrEqual(t, len(Top10(text)), 10)
 	})
 }
