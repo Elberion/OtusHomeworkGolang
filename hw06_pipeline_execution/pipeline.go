@@ -12,6 +12,7 @@ func ExecutePipeline(in In, done In, stages ...Stage) Out {
 	out := make(Out)
 	pipeline := func(done In, incStream In, stage Stage) Out {
 		stageStream := make(Bi)
+
 		go func() {
 			defer close(stageStream)
 			for {
@@ -22,14 +23,17 @@ func ExecutePipeline(in In, done In, stages ...Stage) Out {
 					if !ok {
 						return
 					}
-					stageStream <- doStage(v, stage)
+					buf := make(Bi)
+					go func() {
+						defer close(buf)
+						buf <- v
+					}()
+					stageStream <- <-stage(buf)
 				}
-
 			}
 		}()
 		return stageStream
 	}
-
 	for s := range stages {
 		if s == 0 {
 			out = pipeline(done, in, stages[s])
@@ -38,13 +42,4 @@ func ExecutePipeline(in In, done In, stages ...Stage) Out {
 		out = pipeline(done, out, stages[s])
 	}
 	return out
-}
-
-func doStage(value interface{}, stage Stage) interface{} {
-	out := make(Bi)
-	go func() {
-		defer close(out)
-		out <- value
-	}()
-	return <-stage(out)
 }
