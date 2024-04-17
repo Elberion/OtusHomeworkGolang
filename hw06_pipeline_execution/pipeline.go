@@ -14,12 +14,17 @@ func ExecutePipeline(in In, done In, stages ...Stage) Out {
 		stageStream := make(Bi)
 		go func() {
 			defer close(stageStream)
-			for v := range incStream {
+			for {
 				select {
 				case <-done:
 					return
-				case stageStream <- doStage(v, stage):
+				case v, ok := <-incStream:
+					if !ok {
+						return
+					}
+					stageStream <- doStage(v, stage)
 				}
+
 			}
 		}()
 		return stageStream
