@@ -10,7 +10,7 @@ import (
 
 const (
 	sleepPerStage = time.Millisecond * 100
-	fault         = sleepPerStage / 2
+	fault         = sleepPerStage /// 2
 )
 
 func TestPipeline(t *testing.T) {
@@ -88,6 +88,45 @@ func TestPipeline(t *testing.T) {
 		elapsed := time.Since(start)
 
 		require.Len(t, result, 0)
+		require.Less(t, int64(elapsed), int64(abortDur)+int64(fault))
+	})
+
+	t.Run("late done with different func duration", func(t *testing.T) {
+		in := make(Bi)
+		done := make(Bi)
+		data := []int{1, 2, 3, 4, 5}
+
+		stages = append(stages, g("Stringifier", func(v interface{}) interface{} {
+			time.Sleep(time.Millisecond * 1000)
+			return v
+		}))
+
+		abortDur := sleepPerStage * 16
+		go func() {
+			<-time.After(abortDur)
+			close(done)
+		}()
+
+		go func() {
+			for _, v := range data {
+				select {
+				case <-done:
+					return
+				default:
+					in <- v
+				}
+			}
+			close(in)
+		}()
+
+		result := make([]string, 0, 10)
+		start := time.Now()
+		for s := range ExecutePipeline(in, done, stages...) {
+			result = append(result, s.(string))
+		}
+		elapsed := time.Since(start)
+
+		require.Len(t, result, 1)
 		require.Less(t, int64(elapsed), int64(abortDur)+int64(fault))
 	})
 }
