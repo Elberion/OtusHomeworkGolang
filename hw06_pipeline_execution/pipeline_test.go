@@ -10,7 +10,7 @@ import (
 
 const (
 	sleepPerStage = time.Millisecond * 100
-	fault         = sleepPerStage / 2
+	fault         = sleepPerStage /// 2
 )
 
 func TestPipeline(t *testing.T) {
