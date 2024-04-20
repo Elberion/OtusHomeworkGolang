@@ -10,25 +10,21 @@ type Stage func(in In) (out Out)
 
 func ExecutePipeline(in In, done In, stages ...Stage) Out {
 	out := make(Out)
+
 	pipeline := func(done In, incStream In, stage Stage) Out {
 		stageStream := make(Bi)
-
 		go func() {
 			defer close(stageStream)
+			stageOut := stage(incStream)
 			for {
 				select {
 				case <-done:
 					return
-				case v, ok := <-incStream:
+				case v, ok := <-stageOut:
 					if !ok {
 						return
 					}
-					buf := make(Bi)
-					go func() {
-						defer close(buf)
-						buf <- v
-					}()
-					stageStream <- <-stage(buf)
+					stageStream <- v
 				}
 			}
 		}()
