@@ -27,8 +27,7 @@ func ExecutePipeline(in In, done In, stages ...Stage) Out {
 					select {
 					case <-done:
 						return
-					default:
-						stageStream <- v
+					case stageStream <- v:
 					}
 				}
 			}
